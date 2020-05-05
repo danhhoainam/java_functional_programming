@@ -1,5 +1,7 @@
 package com.practice.fp.commons;
 
+import java.util.Objects;
+
 public abstract class Option<A> {
 
     private Option() {}
@@ -15,7 +17,7 @@ public abstract class Option<A> {
     public abstract <B> Option<B> map(Function<A, B> f);
 
     /**
-     *
+     * method to compose Option
      * @param f
      * @param <B>
      * @return
@@ -46,8 +48,60 @@ public abstract class Option<A> {
                 : none());
     }
 
+    /**
+     * compose 2 option into a new one
+     * @param a
+     * @param b
+     * @param f
+     * @param <A>
+     * @param <B>
+     * @param <C>
+     * @return
+     */
+    public static <A, B, C> Option<C> map2(Option<A> a,
+                                           Option<B> b,
+                                           Function<A, Function<B, C>> f) {
+        return a.flatMap(ax -> b.map(bx -> f.apply(ax).apply(bx)));
+    }
+
+    /**
+     *
+     * @param list
+     * @param <A>
+     * @return
+     */
+    public static <A> Option<List<A>> sequence(List<Option<A>> list) {
+        return list.foldRight(some(List.list()), x -> y -> map2(x, y, a -> b -> b.cons(a)));
+    }
+
+    /**
+     *
+     * @param list
+     * @param f
+     * @param <A>
+     * @param <B>
+     * @return
+     */
+    public static <A, B> Option<List<B>> traverse(List<A> list, Function<A, Option<B>> f) {
+        return list.foldRight(some(List.list()), x -> y -> map2(f.apply(x), y, a -> b -> b.cons(a)));
+    }
+
+    public static <A> Option<List<A>> sequenceByTraverse(List<Option<A>> list) {
+        return traverse(list, x -> x);
+    }
+
     public static <A, B> Function<Option<A>, Option<B>> lift(Function<A, B> f) {
         return a -> a.map(f);
+    }
+
+    public static <A, B> Function<A, Option<B>> hlift(Function<A, B> f) {
+        return x -> {
+            try {
+                return Option.some(x).map(f);
+            } catch (Exception e) {
+                return Option.none();
+            }
+        };
     }
 
     private static class None<A> extends Option<A> {
@@ -71,6 +125,16 @@ public abstract class Option<A> {
         @Override
         public String toString() {
             return "None";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || o instanceof None;
+        }
+
+        @Override
+        public int hashCode() {
+            return 0;
         }
     }
 
@@ -99,6 +163,17 @@ public abstract class Option<A> {
         @Override
         public String toString() {
             return String.format("Some{%s}", this.value);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return (this == o || o instanceof Some)
+                    && this.value.equals(((Some<?>) o).value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(value);
         }
     }
 
