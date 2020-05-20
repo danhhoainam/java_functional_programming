@@ -1,5 +1,7 @@
 package com.practice.fp.commons;
 
+import com.practice.fp.collections.Result;
+
 public class Case<T> extends Tuple<Supplier<Boolean>, Supplier<Result<T>>> {
 
     private Case(Supplier<Boolean> condition,

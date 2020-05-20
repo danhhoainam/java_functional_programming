@@ -3,7 +3,7 @@ package com.practice.fp.chapters.chap3;
 import com.practice.fp.commons.Case;
 import com.practice.fp.commons.Effect;
 import com.practice.fp.commons.Function;
-import com.practice.fp.commons.Result;
+import com.practice.fp.collections.Result;
 
 import java.util.regex.Pattern;
 
